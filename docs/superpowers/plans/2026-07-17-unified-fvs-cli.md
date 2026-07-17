@@ -754,22 +754,23 @@ git commit -m "feat: wire unified FVS CLI workflow"
 - Consumes: FVSjl and official/native installations configured in Task 3.
 - Produces: a distributable file-backed `thinba` example and opt-in serial live smoke tests; a concrete Windows rFVS subprocess command when its runtime is present.
 
-- [ ] **Step 1: Copy and document the reviewed thinba input pair**
+- [x] **Step 1: Copy and document the reviewed thinba input pair**
 
-Copy only `thinba.key` and `thinba.tre` from `~/projects/FVSjl/examples/thinba/`.
+Copy only `thinba.key` and `thinba.tre` from
+`~/projects/FVSjl/examples/legacy/`.
 Record source repository, source commit, Southern variant, redistribution basis,
 and the exact regeneration/copy command in `examples/thinba/README.md`. The
 manifest has no expected database until a provenance-safe database baseline is
 reviewed; it still exercises artifact capture for summary output.
 
-- [ ] **Step 2: Write opt-in live tests before adapter qualification**
+- [x] **Step 2: Write opt-in live tests before adapter qualification**
 
 Use markers `live_engine` and environment/config availability checks. Each test
 runs one engine, once, with a 120-second timeout and asserts success, retained
 logs, and at least one scientific output artifact. Never run these tests in
 parallel or retry a failure.
 
-- [ ] **Step 3: Run catalog tests and one local FVSjl smoke**
+- [x] **Step 3: Run catalog tests and one local FVSjl smoke**
 
 Run:
 
@@ -782,7 +783,7 @@ Expected: catalog PASS; FVSjl PASS or one explicit failure preserved under
 `.runs/`. If FVSjl fails, stop live engine execution, document the diagnostic,
 and do not auto-retry.
 
-- [ ] **Step 4: Qualify official native execution only if FVSjl remained stable**
+- [x] **Step 4: Qualify official native execution only if FVSjl remained stable**
 
 Run one native smoke:
 
@@ -793,16 +794,16 @@ env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/integration/test_live_engines
 Expected: PASS with retained output, or a documented adapter/runtime gap. Do not
 run the full external FVS suites.
 
-- [ ] **Step 5: Implement the Windows rFVS wrapper and unit-test its command**
+- [x] **Step 5: Implement the Windows rFVS wrapper and unit-test its command**
 
-The R wrapper accepts `--keyfile`, `--fvs-bin`, and `--workspace`, loads rFVS,
-runs one keyfile, and exits nonzero with a concise stderr diagnostic on failure.
+The R wrapper accepts keyfile, FVS binary directory, and R library directory
+arguments, loads rFVS, runs one keyfile, and exits nonzero on failure.
 The Python adapter converts workspace paths with `wslpath -w` semantics without
 shell interpolation and launches one Windows `Rscript.exe` process. Unit tests
 mock path conversion and subprocess execution. Live execution remains skipped
 when Windows paths are absent.
 
-- [ ] **Step 6: Verify non-live checks and commit**
+- [x] **Step 6: Verify non-live checks and commit**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache make check`
 

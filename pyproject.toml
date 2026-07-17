@@ -24,3 +24,8 @@ dev = [
     "ruff>=0.15.22",
     "ty>=0.0.60",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "live_engine: invokes a locally installed FVS engine (opt in with FVS_TEST_LIVE=1)",
+]

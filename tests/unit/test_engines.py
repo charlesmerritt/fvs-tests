@@ -7,7 +7,7 @@ from fvs_test.engines import create_adapter
 from fvs_test.engines.base import EngineDefinition, RunRequest
 from fvs_test.engines.fvsjl import FVSjlAdapter
 from fvs_test.engines.native import NativeAdapter
-from fvs_test.engines.windows_rfvs import wsl_to_windows_path
+from fvs_test.engines.windows_rfvs import WindowsRFVSAdapter, wsl_to_windows_path
 
 
 FIXTURE = Path(__file__).parents[1] / "fixtures" / "examples" / "minimal"
@@ -66,6 +66,8 @@ def test_fvsjl_adapter_builds_julia_cli_command(tmp_path: Path) -> None:
         str(project / "bin" / "fvsjl-run.jl"),
         str(workspace / "stand.key"),
         "--variant=SN",
+        "-o",
+        str(workspace / "fvsjl.sum"),
     )
 
 
@@ -92,6 +94,29 @@ def test_windows_path_conversion_is_pure() -> None:
     )
     with pytest.raises(ValueError, match="WSL mounted drive"):
         wsl_to_windows_path(Path("/tmp/input.db"))
+
+
+def test_windows_rfvs_adapter_builds_worker_command() -> None:
+    definition = EngineDefinition(
+        "windows-rfvs",
+        "windows-rfvs",
+        Path("/mnt/c/FVS/R/bin/x64/Rscript.exe"),
+        fvs_bin=Path("/mnt/c/FVS/FVSbin"),
+        variants=("SN",),
+    )
+    workspace = Path("/mnt/c/FVS/runs/test-run")
+    adapter = WindowsRFVSAdapter(definition)
+
+    command = adapter.command(_request(definition, workspace))
+
+    assert command == (
+        "/mnt/c/FVS/R/bin/x64/Rscript.exe",
+        "--vanilla",
+        "C:/FVS/runs/test-run/run_rfvs.R",
+        "C:/FVS/runs/test-run/stand.key",
+        "C:/FVS/FVSbin",
+        "C:/FVS/R/library",
+    )
 
 
 def test_factory_rejects_unknown_adapter(tmp_path: Path) -> None:

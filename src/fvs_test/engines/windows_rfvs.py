@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -41,8 +42,17 @@ class WindowsRFVSAdapter:
         validate_variant(self.definition, example)
 
     def command(self, request: RunRequest) -> tuple[str, ...]:
-        raise EngineValidationError(
-            "Windows rFVS execution wrapper is not configured yet"
+        fvs_bin = self.definition.fvs_bin
+        if fvs_bin is None:
+            raise EngineValidationError("Windows FVS binary directory is not configured")
+        library_root = self.definition.executable.parents[2] / "library"
+        return (
+            str(self.definition.executable),
+            "--vanilla",
+            wsl_to_windows_path(request.workspace / "run_rfvs.R"),
+            wsl_to_windows_path(request.workspace / request.example.keyfile.name),
+            wsl_to_windows_path(fvs_bin),
+            wsl_to_windows_path(library_root),
         )
 
     def discover_outputs(self, workspace: Path) -> tuple[Path, ...]:
@@ -54,6 +64,7 @@ class WindowsRFVSAdapter:
     def run(self, request: RunRequest) -> RunResult:
         from fvs_test.runner import run_engine
 
+        shutil.copy2(_worker_source(), request.workspace / "run_rfvs.R")
         return run_engine(self, request)
 
 
@@ -63,3 +74,7 @@ def wsl_to_windows_path(path: Path) -> str:
         raise ValueError(f"path is not on a WSL mounted drive: {path}")
     drive = parts[2].upper()
     return f"{drive}:/{'/'.join(parts[3:])}"
+
+
+def _worker_source() -> Path:
+    return Path(__file__).with_name("run_rfvs.R")

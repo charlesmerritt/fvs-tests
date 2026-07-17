@@ -52,6 +52,8 @@ class FVSjlAdapter:
             str(self._script()),
             str(keyword_file),
             f"--variant={request.example.variant}",
+            "-o",
+            str(request.workspace / "fvsjl.sum"),
         )
 
     def discover_outputs(self, workspace: Path) -> tuple[Path, ...]:
