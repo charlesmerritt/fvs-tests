@@ -1,10 +1,11 @@
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from fvs_test.catalog import load_example
 from fvs_test.engines import create_adapter
-from fvs_test.engines.base import EngineDefinition, RunRequest
+from fvs_test.engines.base import EngineDefinition, EngineValidationError, RunRequest
 from fvs_test.engines.fvsjl import FVSjlAdapter
 from fvs_test.engines.native import NativeAdapter
 from fvs_test.engines.windows_rfvs import WindowsRFVSAdapter, wsl_to_windows_path
@@ -37,6 +38,24 @@ def test_native_adapter_builds_keywordfile_argument(tmp_path: Path) -> None:
     assert command == (
         str(executable),
         f"--keywordfile={workspace / 'stand.key'}",
+    )
+
+
+def test_native_adapter_preserves_nested_keyword_path(tmp_path: Path) -> None:
+    executable = tmp_path / "FVSsn"
+    definition = EngineDefinition("official-sn", "native", executable, variants=("SN",))
+    workspace = tmp_path / "run"
+    example = load_example(FIXTURE)
+    request = replace(
+        _request(definition, workspace),
+        example=replace(example, keyfile=example.root / "controls" / "stand.key"),
+    )
+
+    command = NativeAdapter(definition).command(request)
+
+    assert command == (
+        str(executable),
+        f"--keywordfile={workspace / 'controls' / 'stand.key'}",
     )
 
 
@@ -117,6 +136,21 @@ def test_windows_rfvs_adapter_builds_worker_command() -> None:
         "C:/FVS/FVSbin",
         "C:/FVS/R/library",
     )
+
+
+def test_windows_rfvs_adapter_rejects_non_windows_workspace() -> None:
+    definition = EngineDefinition(
+        "windows-rfvs",
+        "windows-rfvs",
+        Path("/mnt/c/FVS/R/bin/x64/Rscript.exe"),
+        fvs_bin=Path("/mnt/c/FVS/FVSbin"),
+        variants=("SN",),
+    )
+
+    with pytest.raises(EngineValidationError, match="WSL mounted drive"):
+        WindowsRFVSAdapter(definition).command(
+            _request(definition, Path("/tmp/fvs-test-run"))
+        )
 
 
 def test_factory_rejects_unknown_adapter(tmp_path: Path) -> None:

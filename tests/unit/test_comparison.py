@@ -143,3 +143,35 @@ def test_empty_comparison_policy_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(comparison.ComparisonError, match="at least one table"):
         comparison.compare_databases(actual, expected, ComparisonPolicy())
+
+
+def test_database_connections_are_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    comparison = import_module("fvs_test.comparison")
+
+    class TrackingConnection:
+        def __init__(self) -> None:
+            self.closed = False
+
+        def __enter__(self) -> TrackingConnection:
+            return self
+
+        def __exit__(self, *_: object) -> None:
+            pass
+
+        def execute(self, *_: object) -> TrackingConnection:
+            return self
+
+        def fetchall(self) -> list[object]:
+            return []
+
+        def close(self) -> None:
+            self.closed = True
+
+    connections = [TrackingConnection(), TrackingConnection()]
+    remaining = iter(connections)
+    monkeypatch.setattr(comparison, "_open_readonly", lambda _: next(remaining))
+    policy = ComparisonPolicy(tables={"summary": TablePolicy(("case_id",))})
+
+    comparison.compare_databases(Path("actual.db"), Path("expected.db"), policy)
+
+    assert all(connection.closed for connection in connections)

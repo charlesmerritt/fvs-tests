@@ -12,8 +12,14 @@ def create_workspace(runs_root: Path, run_id: str, example: Example) -> Path:
         raise FileExistsError(f"run workspace already exists: {workspace}")
     workspace.mkdir(parents=True)
     for source in _engine_inputs(example):
-        shutil.copy2(source, workspace / source.name)
+        destination = workspace_path(workspace, example, source)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
     return workspace
+
+
+def workspace_path(workspace: Path, example: Example, source: Path) -> Path:
+    return workspace / source.relative_to(example.root)
 
 
 def _engine_inputs(example: Example) -> tuple[Path, ...]:

@@ -14,6 +14,7 @@ from fvs_test.engines.base import (
     validate_variant,
 )
 from fvs_test.models import Example
+from fvs_test.workspace import workspace_path
 
 
 @dataclass(frozen=True)
@@ -46,14 +47,23 @@ class WindowsRFVSAdapter:
         if fvs_bin is None:
             raise EngineValidationError("Windows FVS binary directory is not configured")
         library_root = self.definition.executable.parents[2] / "library"
-        return (
-            str(self.definition.executable),
-            "--vanilla",
-            wsl_to_windows_path(request.workspace / "run_rfvs.R"),
-            wsl_to_windows_path(request.workspace / request.example.keyfile.name),
-            wsl_to_windows_path(fvs_bin),
-            wsl_to_windows_path(library_root),
-        )
+        try:
+            return (
+                str(self.definition.executable),
+                "--vanilla",
+                wsl_to_windows_path(request.workspace / "run_rfvs.R"),
+                wsl_to_windows_path(
+                    workspace_path(
+                        request.workspace,
+                        request.example,
+                        request.example.keyfile,
+                    )
+                ),
+                wsl_to_windows_path(fvs_bin),
+                wsl_to_windows_path(library_root),
+            )
+        except ValueError as error:
+            raise EngineValidationError(str(error)) from error
 
     def discover_outputs(self, workspace: Path) -> tuple[Path, ...]:
         return tuple(path for path in sorted(workspace.iterdir()) if path.is_file())

@@ -12,6 +12,7 @@ from fvs_test.engines.base import (
     validate_variant,
 )
 from fvs_test.models import Example
+from fvs_test.workspace import workspace_path
 
 
 @dataclass(frozen=True)
@@ -25,7 +26,11 @@ class NativeAdapter:
         validate_variant(self.definition, example)
 
     def command(self, request: RunRequest) -> tuple[str, ...]:
-        keyword_file = request.workspace / request.example.keyfile.name
+        keyword_file = workspace_path(
+            request.workspace,
+            request.example,
+            request.example.keyfile,
+        )
         return (str(self.definition.executable), f"--keywordfile={keyword_file}")
 
     def discover_outputs(self, workspace: Path) -> tuple[Path, ...]:

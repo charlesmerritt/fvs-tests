@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from collections import Counter
+from contextlib import closing
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -67,7 +68,9 @@ def compare_databases(
 
     differences: list[Difference] = []
     cells: list[Cell] = []
-    with _open_readonly(actual) as actual_db, _open_readonly(expected) as expected_db:
+    with closing(_open_readonly(actual)) as actual_db, closing(
+        _open_readonly(expected)
+    ) as expected_db:
         actual_tables = _table_names(actual_db)
         expected_tables = _table_names(expected_db)
         for table, table_policy in sorted(policy.tables.items()):
