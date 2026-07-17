@@ -191,7 +191,7 @@ git commit -m "chore: bootstrap FVS test CLI"
 - Consumes: an examples root containing one directory per `example.toml`.
 - Produces: `Tolerance`, `TablePolicy`, `ComparisonPolicy`, `Example`; `load_example(path: Path) -> Example`; `load_examples(root: Path) -> dict[str, Example]`.
 
-- [ ] **Step 1: Write manifest parser tests first**
+- [x] **Step 1: Write manifest parser tests first**
 
 Create `tests/unit/test_catalog.py` with tests for a valid bundle, a missing asset, duplicate names, and a path escape:
 
@@ -242,13 +242,13 @@ keys = ["case_id", "year"]
 ignore_columns = ["generated_at"]
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/unit/test_catalog.py -q`
 
 Expected: collection FAIL because `fvs_test.catalog` does not exist.
 
-- [ ] **Step 3: Implement immutable manifest models**
+- [x] **Step 3: Implement immutable manifest models**
 
 Create `src/fvs_test/models.py` with validated frozen dataclasses:
 
@@ -291,7 +291,7 @@ class Example:
     comparison: ComparisonPolicy
 ```
 
-- [ ] **Step 4: Implement TOML parsing and containment checks**
+- [x] **Step 4: Implement TOML parsing and containment checks**
 
 Create `src/fvs_test/catalog.py`. Use `tomllib`, resolve every declared asset,
 require `schema_version == 1`, reject empty keys, require files to exist, and
@@ -305,7 +305,7 @@ class CatalogError(ValueError):
     pass
 ```
 
-- [ ] **Step 5: Run focused and project checks**
+- [x] **Step 5: Run focused and project checks**
 
 Run:
 
@@ -316,7 +316,7 @@ env UV_CACHE_DIR=/tmp/uv-cache make check
 
 Expected: catalog tests and all project checks pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/fvs_test/models.py src/fvs_test/catalog.py tests/unit/test_catalog.py tests/fixtures/examples/minimal
