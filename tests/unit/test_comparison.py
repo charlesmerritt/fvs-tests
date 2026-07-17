@@ -134,3 +134,12 @@ def test_duplicate_keys_are_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(comparison.ComparisonError, match="duplicate key"):
         comparison.compare_databases(actual, expected, _policy())
+
+
+def test_empty_comparison_policy_is_rejected(tmp_path: Path) -> None:
+    comparison = import_module("fvs_test.comparison")
+    expected = _database(tmp_path / "expected.db", [("a", 2020, 100.0, "pine", "x")])
+    actual = _database(tmp_path / "actual.db", [("a", 2020, 100.0, "pine", "x")])
+
+    with pytest.raises(comparison.ComparisonError, match="at least one table"):
+        comparison.compare_databases(actual, expected, ComparisonPolicy())

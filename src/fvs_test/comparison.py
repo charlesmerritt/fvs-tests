@@ -62,6 +62,9 @@ def compare_databases(
     expected: Path,
     policy: ComparisonPolicy,
 ) -> ComparisonResult:
+    if not policy.tables:
+        raise ComparisonError("comparison policy must declare at least one table")
+
     differences: list[Difference] = []
     cells: list[Cell] = []
     with _open_readonly(actual) as actual_db, _open_readonly(expected) as expected_db:

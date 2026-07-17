@@ -101,8 +101,9 @@ null, and key values are exact. Floating-point values pass when:
 abs(actual - expected) <= absolute_tolerance + relative_tolerance * abs(expected)
 ```
 
-Tables are compared only when explicitly declared. A minimal manifest section
-looks like:
+Tables are compared only when explicitly declared; a comparison policy with no
+declared tables is rejected rather than reported as equivalent. A minimal
+manifest section looks like:
 
 ```toml
 expected_db = "expected/FVSOut.db"
