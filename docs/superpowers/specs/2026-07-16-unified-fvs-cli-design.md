@@ -1,7 +1,7 @@
 # Unified FVS CLI Design
 
 - Date: 2026-07-16
-- Status: architecture approved; written specification awaiting review
+- Status: approved
 - Architecture review: [`../../architecture/fvs-cli-architecture-review.html`](../../architecture/fvs-cli-architecture-review.html)
 
 ## Goal
