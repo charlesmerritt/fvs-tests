@@ -584,7 +584,7 @@ git commit -m "feat: add isolated serial engine runs"
 - Consumes: actual/expected SQLite paths and `ComparisonPolicy`.
 - Produces: `Difference`, `ComparisonResult`, `compare_databases(actual, expected, policy) -> ComparisonResult`, and `write_comparison(result, path) -> Path`.
 
-- [ ] **Step 1: Write failing comparison tests with generated SQLite databases**
+- [x] **Step 1: Write failing comparison tests with generated SQLite databases**
 
 Use `sqlite3` in fixtures to create small `summary(case_id, year, volume,
 label, generated_at)` tables. Cover exact equality, within/outside tolerance,
@@ -602,13 +602,13 @@ assert result.differences == ()
 The outside-tolerance test asserts a `Difference(kind="value", table="summary",
 column="volume", ...)` with absolute and relative values.
 
-- [ ] **Step 2: Run tests to verify failure**
+- [x] **Step 2: Run tests to verify failure**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/unit/test_comparison.py -q`
 
 Expected: collection FAIL because `fvs_test.comparison` does not exist.
 
-- [ ] **Step 3: Implement read-only SQLite extraction**
+- [x] **Step 3: Implement read-only SQLite extraction**
 
 Open SQLite with `sqlite3.connect(f"file:{path}?mode=ro", uri=True)`. For each
 declared table, quote identifiers only after verifying them against the schema,
@@ -628,7 +628,7 @@ class Cell:
 
 Use compact sorted JSON for `row_key` so composite keys are stable.
 
-- [ ] **Step 4: Implement DuckDB full-outer comparison**
+- [x] **Step 4: Implement DuckDB full-outer comparison**
 
 Create an in-memory DuckDB connection, create a typed `cells` table, insert
 expected and actual cells with `executemany`, and run a full outer join on table,
@@ -649,7 +649,7 @@ class ComparisonResult:
     def counts(self) -> dict[str, int]: ...
 ```
 
-- [ ] **Step 5: Serialize and verify**
+- [x] **Step 5: Serialize and verify**
 
 `write_comparison` writes `comparison.json` with database paths, equivalence,
 counts, and all differences. Run:
@@ -662,7 +662,7 @@ env UV_CACHE_DIR=/tmp/uv-cache make check
 Expected: all comparison cases and project checks pass without downloading a
 DuckDB extension.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/fvs_test/comparison.py tests/unit/test_comparison.py
