@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FVS CLI Architecture Review — Approved</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :where(.grid, .flex) > * { min-width: 0; }
+    :where(p, h1, h2, h3, h4, li, code, .badge) { overflow-wrap: anywhere; }
+    :where(svg, canvas) { max-width: 100%; height: auto; }
+    .mermaid { overflow-x: auto; }
+  </style>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "base",
+      securityLevel: "strict",
+      themeVariables: {
+        primaryColor: "#163526",
+        primaryTextColor: "#f3f7f4",
+        primaryBorderColor: "#4d8264",
+        lineColor: "#6ea982",
+        secondaryColor: "#223f32",
+        tertiaryColor: "#edf6ef"
+      }
+    });
+  </script>
+</head>
+<body class="min-h-screen bg-base-200 text-base-content">
+  <main class="mx-auto max-w-7xl p-4 sm:p-6 lg:p-10">
+    <header class="mb-8 rounded-box border border-base-content/10 bg-base-100 p-6 shadow-xl lg:p-10">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <span class="badge badge-success badge-lg">Architecture approved</span>
+        <span class="badge badge-outline">Serial first</span>
+        <span class="badge badge-outline">Python + DuckDB</span>
+        <span class="badge badge-outline">Containers later</span>
+      </div>
+      <h1 class="max-w-4xl text-4xl font-bold tracking-tight lg:text-6xl">One CLI for many FVS engines</h1>
+      <p class="mt-4 max-w-4xl text-lg opacity-80">
+        Select a named example, execute it through a chosen engine, retain every artifact, and compare SQLite outputs against a known baseline with declared tolerances.
+      </p>
+      <div class="mockup-code mt-7 max-w-4xl bg-neutral text-neutral-content">
+        <pre data-prefix="$"><code>fvs-test run --engine fvsjl --example thinba</code></pre>
+        <pre data-prefix="$"><code>fvs-test compare --run latest --baseline known-fvssn</code></pre>
+      </div>
+    </header>
+
+    <section class="mb-10">
+      <div class="mb-5">
+        <p class="text-sm font-semibold uppercase tracking-widest text-primary">Decision</p>
+        <h2 class="text-3xl font-bold">Three viable boundaries</h2>
+      </div>
+      <div class="grid gap-5 lg:grid-cols-3">
+        <article class="card card-border bg-base-100 shadow-xl ring-2 ring-primary">
+          <div class="card-body">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="card-title text-2xl">A. Typed adapters</h3>
+              <span class="badge badge-success">Selected</span>
+            </div>
+            <p>Small Python adapter per engine behind one stable protocol. Examples remain engine-neutral manifests.</p>
+            <div class="divider my-2"></div>
+            <ul class="list-disc space-y-2 pl-5 text-sm">
+              <li>Best diagnostics and engine-specific validation.</li>
+              <li>Easy to unit-test without launching real engines.</li>
+              <li>Adapters can later gain containers or remote execution without changing the CLI.</li>
+            </ul>
+            <div class="alert alert-soft alert-warning mt-4 text-sm">
+              <span>Cost: each new engine needs a small Python class.</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card card-border bg-base-100 shadow-lg">
+          <div class="card-body">
+            <h3 class="card-title text-2xl">B. Command templates</h3>
+            <p>Describe each engine as shell arguments and file globs in TOML or YAML.</p>
+            <div class="divider my-2"></div>
+            <ul class="list-disc space-y-2 pl-5 text-sm">
+              <li>Fastest way to add simple subprocess engines.</li>
+              <li>No Python code for the happy path.</li>
+              <li>Configuration is portable and inspectable.</li>
+            </ul>
+            <div class="alert alert-soft alert-error mt-4 text-sm">
+              <span>Cost: quoting, Windows paths, probing, and output discovery become a brittle mini-language.</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="card card-border bg-base-100 shadow-lg">
+          <div class="card-body">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="card-title text-2xl">C. Containers/services</h3>
+              <span class="badge badge-info">Long-term direction</span>
+            </div>
+            <p>Give every engine the same HTTP or container entrypoint before integrating it.</p>
+            <div class="divider my-2"></div>
+            <ul class="list-disc space-y-2 pl-5 text-sm">
+              <li>Strong runtime isolation and reproducibility.</li>
+              <li>Natural path toward distributed execution.</li>
+              <li>Uniform deployment interface.</li>
+            </ul>
+            <div class="alert alert-soft alert-error mt-4 text-sm">
+              <span>Deferred: preserve this as an adapter execution mode once the local CLI contract is proven.</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-10 rounded-box border border-base-content/10 bg-base-100 p-5 shadow-lg lg:p-8">
+      <div class="mb-6">
+        <p class="text-sm font-semibold uppercase tracking-widest text-primary">Recommended topology</p>
+        <h2 class="text-3xl font-bold">Stable core, replaceable edges</h2>
+        <p class="mt-2 max-w-4xl opacity-75">The core understands examples, run records, and comparisons. Only adapters understand engine-specific commands and platform paths.</p>
+      </div>
+      <div class="mermaid">
+flowchart TD
+    U["fvs-test CLI"] --> C["Catalog<br/>engines + examples"]
+    U --> R["Run service"]
+    C --> R
+    R --> W["Isolated run workspace"]
+    R --> A{"Engine adapter"}
+    A --> J["FVSjl<br/>Julia CLI"]
+    A --> O["Official / fvs-modern<br/>native executable"]
+    A --> X["Windows rFVS<br/>Rscript via WSL"]
+    J --> W
+    O --> W
+    X --> W
+    W --> M["run.json + stdout + stderr<br/>output DB + generated files"]
+    M --> D["DuckDB comparator"]
+    B["Known output DB"] --> D
+    P["Example comparison policy<br/>keys + ignored columns + tolerances"] --> D
+    D --> Q["Terminal summary + diff tables"]
+      </div>
+    </section>
+
+    <section class="mb-10 grid gap-5 lg:grid-cols-2">
+      <article class="card card-border bg-base-100 shadow-lg">
+        <div class="card-body">
+          <p class="text-sm font-semibold uppercase tracking-widest text-primary">Example bundle</p>
+          <h2 class="card-title text-2xl">Inputs and expectations travel together</h2>
+          <div class="mockup-code mt-3 bg-neutral text-neutral-content text-sm">
+            <pre><code>examples/thinba/</code></pre>
+            <pre><code>  example.toml</code></pre>
+            <pre><code>  thinba.key</code></pre>
+            <pre><code>  thinba.tre</code></pre>
+            <pre><code>  input.db          # optional</code></pre>
+            <pre><code>  expected/FVSOut.db</code></pre>
+          </div>
+          <p class="mt-3 text-sm opacity-75">The manifest declares required files, variant, baseline, row keys, excluded metadata, and numeric tolerances.</p>
+        </div>
+      </article>
+
+      <article class="card card-border bg-base-100 shadow-lg">
+        <div class="card-body">
+          <p class="text-sm font-semibold uppercase tracking-widest text-primary">Engine contract</p>
+          <h2 class="card-title text-2xl">Probe, validate, run, collect</h2>
+          <ol class="steps steps-vertical mt-4">
+            <li class="step step-primary">Probe runtime and version</li>
+            <li class="step step-primary">Validate example compatibility</li>
+            <li class="step step-primary">Build argv without a shell</li>
+            <li class="step step-primary">Run with timeout in isolated workspace</li>
+            <li class="step step-primary">Return structured artifacts and diagnostics</li>
+          </ol>
+          <p class="mt-4 text-sm opacity-75">No engine adapter decides whether scientific results pass; comparison remains a separate DuckDB-backed service.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="mb-10 rounded-box border border-base-content/10 bg-base-100 p-5 shadow-lg lg:p-8">
+      <h2 class="text-3xl font-bold">Scope boundary</h2>
+      <div class="mt-5 grid gap-5 md:grid-cols-2">
+        <div class="alert alert-soft alert-success items-start">
+          <div>
+            <h3 class="font-bold">First delivery</h3>
+            <p class="mt-1 text-sm">Serial CLI, engine discovery, named examples, isolated workspaces, FVSjl and native executable adapters, DuckDB database comparison, deterministic tests, Make targets, and CI that exercises fake engines plus DB comparison.</p>
+          </div>
+        </div>
+        <div class="alert alert-soft alert-info items-start">
+          <div>
+            <h3 class="font-bold">Designed now, implemented later</h3>
+            <p class="mt-1 text-sm">Windows rFVS live adapter qualification, container-backed adapters, remote execution, parallel scheduling, checkpoints, state mutation, and performance benchmarks. Containers remain the intended route toward orchestrating many isolated instances.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-box border border-success/40 bg-base-100 p-5 shadow-xl lg:p-8">
+      <div class="alert alert-soft alert-success items-start">
+        <div>
+          <h2 class="text-2xl font-bold">Decision recorded</h2>
+          <p class="mt-2">Implement Architecture A: typed Python engine adapters behind a stable run contract. Keep Architecture C visible as the future execution strategy for isolated and parallel engine instances, without adding container machinery to this repository's first milestone.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

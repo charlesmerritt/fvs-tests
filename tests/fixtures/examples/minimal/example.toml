@@ -1,0 +1,18 @@
+schema_version = 1
+name = "minimal"
+description = "Synthetic parser fixture"
+variant = "SN"
+keyfile = "stand.key"
+tree_data = "stand.tre"
+
+[comparison]
+default_absolute_tolerance = 1.0e-6
+default_relative_tolerance = 1.0e-6
+
+[comparison.tables.summary]
+keys = ["case_id", "year"]
+ignore_columns = ["generated_at"]
+
+[comparison.tables.summary.tolerances.volume]
+absolute = 1.0
+relative = 0.001

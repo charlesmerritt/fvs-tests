@@ -1,0 +1,10 @@
+schema_version = 1
+name = "thinba"
+description = "Southern variant thinning from below to residual basal area 80 in 2010"
+variant = "SN"
+keyfile = "thinba.key"
+tree_data = "thinba.tre"
+
+[comparison]
+default_absolute_tolerance = 1.0
+default_relative_tolerance = 0.001

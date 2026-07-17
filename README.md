@@ -1,81 +1,176 @@
 # FVS Interface Tests
 
-A shared test harness for evaluating Forest Vegetation Simulator (FVS) interfaces in synchronous and parallel execution modes.
+A serial Python CLI for running the same example through multiple Forest
+Vegetation Simulator engines, retaining every run, and comparing SQLite output
+against a known baseline with explicit tolerances.
 
-## Goals
+The current architecture is intentionally small: named example bundles feed
+typed engine adapters behind one run contract. Container-backed and parallel
+execution can reuse that boundary later; they are not part of this milestone.
 
-- Verify that each interface can run representative FVS cases successfully.
-- Compare normalized results across interfaces.
-- Confirm that parallel execution produces the same results as synchronous execution.
-- Detect shared-state, working-directory, and output-collision failures.
+## Quick start
 
-Performance benchmarking is out of scope unless a test explicitly records timing or resource metrics.
+Prerequisites are Python 3.12+ and
+[`uv`](https://docs.astral.sh/uv/). FVS engines are optional: listing examples,
+database comparison, and the deterministic test suite work without local FVS
+installations.
 
-## Repository structure
-
-```text
-.
-├── templates/
-│   └── interface/          # Copyable skeleton for a new interface
-├── tests/
-│   ├── fixtures/           # Cases and expected results shared by interfaces
-│   └── interfaces/         # One directory per tested interface
-└── notes/                  # Design decisions and open questions
+```bash
+uv sync --locked --all-groups
+uv run fvs-test engines
+uv run fvs-test examples
+uv run fvs-test run --engine fvsjl --example thinba
 ```
 
-Each interface directory follows this shape:
+The equivalent Make targets are:
 
-```text
-tests/interfaces/<interface-name>/
-├── README.md               # Setup, versions, commands, and limitations
-├── fixtures/               # Interface-specific inputs or configuration
-├── synchronous/            # Single-run correctness tests
-└── parallel/               # Concurrent-run correctness and isolation tests
+```bash
+make install
+make check
+make run ENGINE=fvsjl EXAMPLE=thinba
 ```
 
-## Add an interface
+## Configure engines
 
-1. Copy the skeleton:
+[`config/engines.toml`](config/engines.toml) defines the engine identities and
+their default local paths. Put machine-specific path overrides in the ignored
+`fvs-test.local.toml`:
 
-   ```bash
-   cp -R templates/interface tests/interfaces/<interface-name>
-   ```
+```toml
+[engines.fvsjl]
+executable = "/path/to/julia"
+project = "/path/to/FVSjl"
 
-2. Complete the copied `README.md` with installation and invocation details.
-3. Add interface-specific fixtures only when a shared fixture cannot be used directly.
-4. Add synchronous tests first to establish expected behavior.
-5. Add parallel tests that run the same cases and compare against the synchronous results.
-6. Document the test command in the interface README.
+[engines.official-sn]
+executable = "/path/to/FVSsn"
+```
 
-## Test contract
+Run `uv run fvs-test engines` to see which configured engines are currently
+available and why an engine cannot be used. The shipped adapters are:
 
-All interface suites should follow the same rules:
+- `fvsjl`: Julia plus the FVSjl command-line runner.
+- `native`: official FVS and `fvs-modern` executables using
+  `--keywordfile=<path>`.
+- `windows-rfvs`: Windows `Rscript.exe`, rFVS, and a variant DLL through WSL.
+  Its `--runs-root` must be on a `/mnt/<drive>/...` path visible to Windows.
 
-- Use deterministic inputs and record the FVS variant and version.
-- Keep expected scientific outputs separate from logs and timing data.
-- Normalize volatile values such as timestamps and temporary paths before comparison.
-- Give every invocation an isolated working directory and unique output paths.
-- Treat the synchronous result as the baseline for the equivalent parallel run.
-- Fail with enough context to identify the interface, case, worker, and retained artifacts.
+Configuration selects trusted adapters and installations; it does not accept
+arbitrary shell command templates.
 
-### Synchronous tests
+## Run an example
 
-Synchronous tests run one case at a time. They establish that the interface is configured correctly and provide baseline results for parallel comparisons.
+```bash
+uv run fvs-test run \
+  --engine official-sn \
+  --example thinba \
+  --timeout 120
+```
 
-### Parallel tests
+Every invocation gets an isolated `.runs/<run-id>/` workspace containing copied
+inputs, discovered engine outputs, `stdout.log`, `stderr.log`, and `run.json`.
+Failed and timed-out runs are retained for diagnosis. Only one engine subprocess
+runs at a time, with no retry or background worker.
 
-Parallel tests run independent cases concurrently using the concurrency model appropriate to the interface (for example, processes, threads, or async tasks). They should verify correctness and isolation, not merely that all calls returned.
+Global path options precede the command when needed:
 
-## Fixtures
+```bash
+uv run fvs-test \
+  --engine-config config/engines.toml \
+  --local-config fvs-test.local.toml \
+  --runs-root /mnt/c/FVS/fvs-tests-runs \
+  run --engine windows-rfvs --example thinba
+```
 
-Place reusable FVS inputs and expected normalized outputs in `tests/fixtures/`. Keep interface-specific wrappers, control files, or generated configuration under that interface's local `fixtures/` directory.
+## Compare SQLite outputs
 
-Do not commit licensed binaries, credentials, or machine-specific FVS installations.
+An example can declare an `expected_db` and the tables, row keys, ignored
+columns, and tolerances to compare. A successful run then compares automatically
+and writes `comparison.json`. An existing output can also be checked directly:
 
-## Running tests
+```bash
+uv run fvs-test compare \
+  --example my-case \
+  --actual .runs/<run-id>/FVSOut.db
+```
 
-No test framework or interface dependency has been selected yet. Each interface README must document its setup and test command until a common runner is adopted.
+Use `--expected path/to/other.db` to override the example baseline. SQLite is
+opened read-only; DuckDB performs the keyed comparison. Text, integer, blob,
+null, and key values are exact. Floating-point values pass when:
 
-## Status
+```text
+abs(actual - expected) <= absolute_tolerance + relative_tolerance * abs(expected)
+```
 
-The repository currently contains the documentation and copyable interface-test structure. Concrete FVS interfaces and baseline cases are the next additions.
+Tables are compared only when explicitly declared; a comparison policy with no
+declared tables is rejected rather than reported as equivalent. A minimal
+manifest section looks like:
+
+```toml
+expected_db = "expected/FVSOut.db"
+
+[comparison]
+default_absolute_tolerance = 1.0e-6
+default_relative_tolerance = 1.0e-6
+
+[comparison.tables.FVS_Summary2]
+keys = ["CaseID", "Year", "MgmtID"]
+ignore_columns = ["GeneratedAt"]
+
+[comparison.tables.FVS_Summary2.tolerances.Volume]
+absolute = 1.0
+relative = 0.001
+```
+
+Do not add a baseline without recording its engine, version, invocation, source,
+and redistribution basis.
+
+## Add an example or engine
+
+Add examples under `examples/<name>/` with an `example.toml`, documented
+provenance, and only the declared input/baseline assets. Paths may not escape the
+bundle. [`examples/thinba/`](examples/thinba/) is the first real smoke fixture.
+
+Add an engine by implementing the small protocol in
+[`src/fvs_test/engines/base.py`](src/fvs_test/engines/base.py), registering its
+trusted adapter name in the engine factory/config parser, and testing probe,
+validation, argument-vector construction, accepted exit codes, and artifact
+discovery. Keep comparison policy outside adapters.
+
+## Tests and CI
+
+```bash
+make check
+```
+
+This runs Ruff, ty, and pytest. GitHub Actions runs only deterministic unit and
+fake-engine integration tests. Real engines are opt-in and always serial:
+
+```bash
+FVS_TEST_LIVE=1 uv run pytest tests/integration/test_live_engines.py \
+  -m live_engine -k fvsjl -q
+
+FVS_TEST_LIVE=1 uv run pytest tests/integration/test_live_engines.py \
+  -m live_engine -k fvs_modern -q
+
+FVS_TEST_LIVE=1 \
+FVS_TEST_WINDOWS_RUNS_ROOT=/mnt/c/FVS/fvs-tests-runs \
+uv run pytest tests/integration/test_live_engines.py \
+  -m live_engine -k windows -q
+```
+
+Run each live selection separately. Do not automatically retry a crash or
+timeout; inspect the retained workspace first.
+
+There is no continuous-deployment target because this repository does not yet
+publish a package or operate a service.
+
+## Architecture and status
+
+- [Approved design](docs/superpowers/specs/2026-07-16-unified-fvs-cli-design.md)
+- [Architecture review](docs/architecture/fvs-cli-architecture-review.html)
+- [Implementation plan](docs/superpowers/plans/2026-07-17-unified-fvs-cli.md)
+- [Durable project notes](notes/README.md)
+
+The next scientific milestone is a reviewed SQLite baseline with stable table
+keys and tolerances. Parallel scheduling, containers, checkpoints, and Python
+state mutation remain explicit later phases.

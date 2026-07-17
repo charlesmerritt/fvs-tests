@@ -1,9 +1,9 @@
-# Interface test suites
+# Legacy interface scaffold
 
-Create one directory per FVS interface by copying `templates/interface/`:
+The current architecture uses typed adapters under `src/fvs_test/engines/` and
+shared CLI integration tests under `tests/integration/`. New production engine
+coverage should be added there.
 
-```bash
-cp -R templates/interface tests/interfaces/<interface-name>
-```
-
-Use a short, stable, lowercase directory name. Keep setup and invocation instructions in the copied README.
+This directory is retained only as a historical scaffold for isolated exploratory
+tests. Do not create a second directory-per-interface abstraction for engines
+already supported by the unified CLI.

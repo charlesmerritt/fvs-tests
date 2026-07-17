@@ -1,4 +1,14 @@
-# <Interface name>
+# Legacy exploratory interface template
+
+The unified CLI now represents supported engines as typed adapters under
+`src/fvs_test/engines/`. Prefer adding an adapter, example bundle, and shared
+integration test as documented in the repository README.
+
+Use this template only for a deliberately isolated experiment that cannot yet
+fit the common run contract. Record why it is separate and what would be needed
+to migrate it.
+
+## <Interface name>
 
 Describe the FVS interface represented by this directory.
 

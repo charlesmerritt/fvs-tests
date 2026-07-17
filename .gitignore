@@ -1,0 +1,9 @@
+.worktrees/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.runs/
+dist/
+fvs-test.local.toml
+__pycache__/
+*.py[cod]
