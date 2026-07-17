@@ -8,6 +8,7 @@ from fvs_test.engines.base import (
     EngineStatus,
     EngineValidationError,
     RunRequest,
+    RunResult,
     executable_status,
     validate_variant,
 )
@@ -46,6 +47,14 @@ class WindowsRFVSAdapter:
 
     def discover_outputs(self, workspace: Path) -> tuple[Path, ...]:
         return tuple(path for path in sorted(workspace.iterdir()) if path.is_file())
+
+    def accepts_exit_code(self, exit_code: int) -> bool:
+        return exit_code == 0
+
+    def run(self, request: RunRequest) -> RunResult:
+        from fvs_test.runner import run_engine
+
+        return run_engine(self, request)
 
 
 def wsl_to_windows_path(path: Path) -> str:

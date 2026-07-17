@@ -6,6 +6,7 @@ from pathlib import Path
 from fvs_test.engines.base import (
     EngineDefinition,
     EngineStatus,
+    RunResult,
     RunRequest,
     executable_status,
     validate_variant,
@@ -33,3 +34,11 @@ class NativeAdapter:
             for path in sorted(workspace.iterdir())
             if path.is_file() and path.suffix.lower() in {".csv", ".db", ".out", ".sum"}
         )
+
+    def accepts_exit_code(self, exit_code: int) -> bool:
+        return exit_code in {0, 10}
+
+    def run(self, request: RunRequest) -> RunResult:
+        from fvs_test.runner import run_engine
+
+        return run_engine(self, request)

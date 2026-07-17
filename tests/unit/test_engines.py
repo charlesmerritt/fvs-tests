@@ -78,6 +78,14 @@ def test_probe_explains_missing_executable(tmp_path: Path) -> None:
     assert "not executable" in status.diagnostic
 
 
+def test_native_accepts_fortran_stop_10_but_fvsjl_does_not(tmp_path: Path) -> None:
+    executable = tmp_path / "engine"
+    definition = EngineDefinition("engine", "native", executable)
+
+    assert NativeAdapter(definition).accepts_exit_code(10) is True
+    assert FVSjlAdapter(definition).accepts_exit_code(10) is False
+
+
 def test_windows_path_conversion_is_pure() -> None:
     assert wsl_to_windows_path(Path("/mnt/c/FVS/My Run/input.db")) == (
         "C:/FVS/My Run/input.db"

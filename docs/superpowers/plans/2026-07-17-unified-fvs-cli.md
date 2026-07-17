@@ -485,7 +485,7 @@ git commit -m "feat: add typed FVS engine adapters"
 - Consumes: `Example`, `RunRequest`, and `EngineAdapter` from prior tasks.
 - Produces: `create_workspace(runs_root, run_id, example) -> Path`; internal `run_engine(adapter, request) -> RunResult`; public `EngineAdapter.run(request) -> RunResult`; `write_run_record(result) -> Path`.
 
-- [ ] **Step 1: Write failing workspace and runner tests**
+- [x] **Step 1: Write failing workspace and runner tests**
 
 Cover copied inputs, source containment, success, nonzero exit, timeout, output
 discovery, logs, single-thread environment defaults, and `run.json` on every
@@ -501,20 +501,20 @@ assert result.stderr_path.read_text() == ""
 assert result.record_path.exists()
 ```
 
-- [ ] **Step 2: Run tests and observe the expected failure**
+- [x] **Step 2: Run tests and observe the expected failure**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/unit/test_workspace.py tests/unit/test_runner.py -q`
 
 Expected: collection FAIL for missing modules.
 
-- [ ] **Step 3: Implement workspace copying**
+- [x] **Step 3: Implement workspace copying**
 
 `create_workspace` creates `<runs_root>/<run_id>/`, rejects an existing path, and
 copies only manifest-declared inputs while preserving their relative names. It
 does not copy `expected_db` into the engine workspace. Return the resolved
 workspace path.
 
-- [ ] **Step 4: Implement process execution and durable results**
+- [x] **Step 4: Implement process execution and durable results**
 
 Add to `engines/base.py`:
 
@@ -563,7 +563,7 @@ def run(self, request: RunRequest) -> RunResult:
 `Application` and other consumers call `adapter.run(request)`; only runner unit
 tests call `run_engine` directly to inject deterministic subprocess results.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache make check`
 
