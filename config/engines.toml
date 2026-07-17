@@ -1,0 +1,21 @@
+[engines.fvsjl]
+adapter = "fvsjl"
+executable = "~/.juliaup/bin/julia"
+project = "~/projects/FVSjl"
+variants = ["SN", "NE"]
+
+[engines.official-sn]
+adapter = "native"
+executable = "~/projects/ForestVegetationSimulator/bin/FVSsn"
+variants = ["SN"]
+
+[engines.fvs-modern-sn]
+adapter = "native"
+executable = "~/projects/fvs-modern/lib/FVSsn"
+variants = ["SN"]
+
+[engines.windows-rfvs]
+adapter = "windows-rfvs"
+executable = "/mnt/c/FVS/FVSSoftware/R/R-4.5.0/bin/x64/Rscript.exe"
+fvs_bin = "/mnt/c/FVS/FVSSoftware/FVSbin"
+variants = ["SN"]

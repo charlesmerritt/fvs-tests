@@ -341,7 +341,7 @@ git commit -m "feat: add example bundle catalog"
 - Consumes: trusted adapter names and installation paths from TOML.
 - Produces: `EngineDefinition`, `EngineStatus`, `RunRequest`, `EngineAdapter`; `load_engine_definitions(base, local=None)`; `create_adapter(definition)`.
 
-- [ ] **Step 1: Write failing engine configuration and adapter tests**
+- [x] **Step 1: Write failing engine configuration and adapter tests**
 
 Tests must prove that local TOML overrides only named path/version fields, unknown
 adapter names fail, unavailable executables produce useful probe diagnostics, and
@@ -363,13 +363,13 @@ assert fvsjl.command(request) == (
 )
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/unit/test_config.py tests/unit/test_engines.py -q`
 
 Expected: collection FAIL because the engine modules do not exist.
 
-- [ ] **Step 3: Implement engine data contracts and protocol**
+- [x] **Step 3: Implement engine data contracts and protocol**
 
 In `engines/base.py`, define frozen dataclasses and the protocol:
 
@@ -402,20 +402,19 @@ class RunRequest:
 
 
 class EngineAdapter(Protocol):
-    definition: EngineDefinition
+    @property
+    def definition(self) -> EngineDefinition: ...
     def probe(self) -> EngineStatus: ...
     def validate(self, example: Example) -> None: ...
     def command(self, request: RunRequest) -> tuple[str, ...]: ...
     def discover_outputs(self, workspace: Path) -> tuple[Path, ...]: ...
-    def run(self, request: RunRequest) -> RunResult: ...
 ```
 
-Import `RunResult` only under `TYPE_CHECKING`; postponed annotations keep the
-protocol importable before Task 4 defines that type. Concrete adapters gain the
-shared `run` delegation in Task 4. Command construction and artifact discovery
-remain adapter-specific; subprocess mechanics remain centralized.
+Task 4 extends the protocol and concrete adapters with `run` after `RunResult`
+exists. Command construction and artifact discovery remain adapter-specific;
+subprocess mechanics remain centralized.
 
-- [ ] **Step 4: Implement trusted engine config parsing**
+- [x] **Step 4: Implement trusted engine config parsing**
 
 `load_engine_definitions` parses `[engines.<name>]`, expands `~`, merges an optional
 ignored local file by engine name, and accepts only `native`, `fvsjl`, and
@@ -448,7 +447,7 @@ fvs_bin = "/mnt/c/FVS/FVSSoftware/FVSbin"
 variants = ["SN"]
 ```
 
-- [ ] **Step 5: Implement adapter probes, validation, commands, and discovery**
+- [x] **Step 5: Implement adapter probes, validation, commands, and discovery**
 
 - Native validates the variant and keyfile, invokes `<executable>
   --keywordfile=<workspace-keyfile>`, and discovers new regular files excluding
@@ -459,7 +458,7 @@ variants = ["SN"]
   a precise unsupported-live-run error until the tested R wrapper is added in
   Task 7. Path conversion is a pure `wsl_to_windows_path(Path) -> str` function.
 
-- [ ] **Step 6: Verify and commit**
+- [x] **Step 6: Verify and commit**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache make check`
 

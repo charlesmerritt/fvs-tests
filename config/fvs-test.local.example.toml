@@ -1,0 +1,6 @@
+# Copy this file to ../fvs-test.local.toml and override only local installation
+# paths or supported variants. Engine adapters remain defined by engines.toml.
+
+[engines.fvsjl]
+executable = "~/.juliaup/bin/julia"
+project = "~/projects/FVSjl"
