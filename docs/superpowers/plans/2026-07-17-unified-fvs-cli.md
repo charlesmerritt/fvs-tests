@@ -681,7 +681,7 @@ git commit -m "feat: compare FVS SQLite outputs"
 - Consumes: catalogs, adapter factory, runner, and comparator.
 - Produces: `Application.list_engines()`, `Application.list_examples()`, `Application.run(engine_name, example_name, timeout)`, `Application.compare(example_name, actual, expected=None)`; fully functional `fvs-test` commands.
 
-- [ ] **Step 1: Write CLI behavior tests before orchestration code**
+- [x] **Step 1: Write CLI behavior tests before orchestration code**
 
 Unit tests inject a fake `Application` and assert output/exit codes for available
 and unavailable engines, example listing, passing runs, failed runs, and comparison
@@ -689,13 +689,13 @@ mismatches. The integration test creates a temporary executable fake native engi
 with a shebang, writes an output SQLite DB, configures it through temporary TOML,
 and invokes `python -m fvs_test.cli run ...` in a subprocess.
 
-- [ ] **Step 2: Run tests and observe failure**
+- [x] **Step 2: Run tests and observe failure**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/unit/test_cli.py tests/integration/test_cli_run.py -q`
 
 Expected: FAIL because `Application` and command dispatch are absent.
 
-- [ ] **Step 3: Implement application orchestration**
+- [x] **Step 3: Implement application orchestration**
 
 `Application.from_paths(repo_root, engine_config, local_config, runs_root)` loads
 catalogs once. `run` creates a UTC timestamp/UUID run ID, probes and validates the
@@ -706,7 +706,7 @@ workspace and return both result objects.
 No database output is not an error for examples without a known database. It is
 an explicit failure when a baseline exists.
 
-- [ ] **Step 4: Implement command dispatch and readable output**
+- [x] **Step 4: Implement command dispatch and readable output**
 
 Add global testable path flags:
 
@@ -723,7 +723,7 @@ engine/example per line, print the retained workspace for every run, show
 comparison counts plus at most 20 differences, and return 1 for execution failure
 or mismatch.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Run:
 
