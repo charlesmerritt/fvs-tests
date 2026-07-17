@@ -38,7 +38,7 @@
 - Consumes: approved CLI names `engines`, `examples`, `run`, and `compare`.
 - Produces: `fvs_test.cli.build_parser() -> argparse.ArgumentParser` and `fvs_test.cli.main(argv: Sequence[str] | None = None) -> int`.
 
-- [ ] **Step 1: Initialize project metadata with the inspected Python template guidance**
+- [x] **Step 1: Initialize project metadata with the inspected Python template guidance**
 
 Run:
 
@@ -50,7 +50,7 @@ env UV_CACHE_DIR=/tmp/uv-cache uv add --dev pytest ruff ty
 
 Expected: `pyproject.toml`, `.python-version`, `src/fvs_test/`, and `uv.lock` exist; DuckDB is a runtime dependency and pytest/Ruff/ty are development dependencies.
 
-- [ ] **Step 2: Write the failing CLI parser test**
+- [x] **Step 2: Write the failing CLI parser test**
 
 Create `tests/unit/test_cli.py`:
 
@@ -64,13 +64,13 @@ def test_parser_exposes_top_level_commands() -> None:
     assert set(action.choices) == {"engines", "examples", "run", "compare"}
 ```
 
-- [ ] **Step 3: Run the test to verify it fails**
+- [x] **Step 3: Run the test to verify it fails**
 
 Run: `env UV_CACHE_DIR=/tmp/uv-cache uv run pytest tests/unit/test_cli.py -q`
 
 Expected: FAIL because `fvs_test.cli` or `build_parser` does not exist.
 
-- [ ] **Step 4: Implement the minimal parser and entrypoint**
+- [x] **Step 4: Implement the minimal parser and entrypoint**
 
 Create `src/fvs_test/cli.py`:
 
@@ -115,7 +115,7 @@ Set the project script in `pyproject.toml`:
 fvs-test = "fvs_test.cli:main"
 ```
 
-- [ ] **Step 5: Add the smallest project Makefile and ignore generated state**
+- [x] **Step 5: Add the smallest project Makefile and ignore generated state**
 
 Create `Makefile`:
 
@@ -158,7 +158,7 @@ __pycache__/
 *.py[cod]
 ```
 
-- [ ] **Step 6: Mark the approved design status and verify the bootstrap**
+- [x] **Step 6: Mark the approved design status and verify the bootstrap**
 
 Change the design status to `approved` and run:
 
@@ -170,7 +170,7 @@ env UV_CACHE_DIR=/tmp/uv-cache uv run ty check
 
 Expected: one test passes; Ruff and ty exit zero.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add .python-version .gitignore pyproject.toml uv.lock Makefile src/fvs_test tests/unit/test_cli.py docs/superpowers/specs/2026-07-16-unified-fvs-cli-design.md
