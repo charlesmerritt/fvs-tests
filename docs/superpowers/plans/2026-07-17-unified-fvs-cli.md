@@ -828,7 +828,7 @@ git commit -m "feat: add real FVS smoke adapters"
 - Consumes: complete CLI and Make targets.
 - Produces: one documented setup/run/test path, deterministic GitHub CI, and a clear legacy-scaffold migration note.
 
-- [ ] **Step 1: Add CI that runs only deterministic checks**
+- [x] **Step 1: Add CI that runs only deterministic checks**
 
 Create `.github/workflows/ci.yml`:
 
@@ -852,7 +852,7 @@ jobs:
       - run: make check
 ```
 
-- [ ] **Step 2: Rewrite README around the executable workflow**
+- [x] **Step 2: Rewrite README around the executable workflow**
 
 Document prerequisites, `uv sync`, local engine paths, `fvs-test engines`,
 `examples`, `run`, and `compare`; explain `.runs/<run-id>/`; show how to add an
@@ -860,14 +860,14 @@ adapter and example; explain that CI uses fake engines and that live tests are
 opt-in. State that continuous deployment is not applicable because there is no
 service or package publication target.
 
-- [ ] **Step 3: Update durable notes and the initial placeholder scaffold**
+- [x] **Step 3: Update durable notes and the initial placeholder scaffold**
 
 Record implemented engine status, live smoke evidence, the database-baseline
 gap, and the container-orchestration future. Update the old interface template
 READMEs to point to the typed-adapter and example-bundle docs rather than
 presenting the original directory-per-interface structure as current.
 
-- [ ] **Step 4: Run final verification from documented commands**
+- [x] **Step 4: Run final verification from documented commands**
 
 Run:
 
@@ -880,7 +880,7 @@ env UV_CACHE_DIR=/tmp/uv-cache uv run fvs-test examples
 
 Expected: sync and checks exit zero; CLI lists configured engines and `thinba`.
 
-- [ ] **Step 5: Inspect change scope and commit**
+- [x] **Step 5: Inspect change scope and commit**
 
 Run: `git diff --check && git status --short`
 
@@ -891,11 +891,16 @@ git add .github/workflows/ci.yml README.md notes/README.md tests/fixtures/README
 git commit -m "docs: document unified FVS workflow"
 ```
 
-- [ ] **Step 6: Record final milestone evidence**
+- [x] **Step 6: Record final milestone evidence**
 
 Update the plan checkboxes, notes, and final response with exact deterministic
 test counts, live-engine outcomes, commit hashes, and remaining gaps. Do not claim
 a live adapter works unless its smoke command ran successfully in this session.
+
+Milestone evidence: `make check` passed with 31 deterministic tests and 3 live
+tests skipped by default. Separate opt-in smoke tests passed for FVSjl, official
+native SN, and Windows rFVS. `fvs-modern-sn` remained unavailable at its default
+configured path. The built wheel contains the Windows rFVS worker script.
 
 ## Plan completion criteria
 

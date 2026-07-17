@@ -19,5 +19,20 @@
 
 - Select or generate a redistributable SQLite database-backed example.
 - Confirm stable comparison tables, keys, and tolerances for the first scientific gate.
-- Qualify FVSjl and a native official/FVS-modern executable against the `thinba` example.
-- Qualify the Windows rFVS adapter when the host runtime is available.
+- Install or configure `fvs-modern`; its default executable path was unavailable
+  during the 2026-07-17 milestone.
+
+## 2026-07-17 implementation milestone
+
+- The installable CLI, typed adapters, isolated runner, example catalog, and
+  DuckDB-backed SQLite comparator are implemented.
+- The deterministic gate passed with 31 tests; 3 live tests remain skipped by
+  default.
+- One serial `thinba` smoke passed for FVSjl, the official native SN binary, and
+  Windows rFVS. Each used a 120-second timeout and was run separately without
+  retries. The Windows test used an isolated `/mnt/c/FVS/fvs-tests-runs` root.
+- `thinba` is a smoke input only. It intentionally has no expected database, so
+  the live evidence qualifies invocation and artifact capture—not numerical
+  equivalence.
+- GitHub CI runs deterministic checks only. There is no deployment target for
+  this local experiment harness.

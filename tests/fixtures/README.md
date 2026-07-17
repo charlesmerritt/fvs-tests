@@ -1,5 +1,8 @@
-# Shared FVS fixtures
+# Synthetic test fixtures
 
-Store reusable model inputs and expected normalized outputs here.
+This directory contains small synthetic data used to test parser, runner, and
+comparison behavior without an FVS installation.
 
-Each case should document its source, FVS variant, expected outputs, and any redistribution constraints. Keep raw FVS output separate from normalized comparison data, and avoid committing licensed or machine-specific files.
+Real user-selectable inputs belong in `examples/<name>/` with an `example.toml`
+and provenance README. Known scientific output databases also belong inside
+their example bundle, not in this test-only directory.
