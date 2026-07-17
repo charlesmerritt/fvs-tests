@@ -19,18 +19,25 @@
 
 - Select or generate a redistributable SQLite database-backed example.
 - Confirm stable comparison tables, keys, and tolerances for the first scientific gate.
-- Install or configure `fvs-modern`; its default executable path was unavailable
-  during the 2026-07-17 milestone.
+- Decide how local `fvs-modern` checkouts should be pinned or updated after the
+  initial qualification; the engine installation remains external to this repo.
 
 ## 2026-07-17 implementation milestone
 
 - The installable CLI, typed adapters, isolated runner, example catalog, and
   DuckDB-backed SQLite comparator are implemented.
-- The deterministic gate passed with 31 tests; 3 live tests remain skipped by
+- The deterministic gate passed with 31 tests; 4 live tests remain skipped by
   default.
-- One serial `thinba` smoke passed for FVSjl, the official native SN binary, and
-  Windows rFVS. Each used a 120-second timeout and was run separately without
-  retries. The Windows test used an isolated `/mnt/c/FVS/fvs-tests-runs` root.
+- One serial `thinba` smoke passed for FVSjl, the official native SN binary,
+  fvs-modern SN, and Windows rFVS. Each used a 120-second timeout and was run
+  separately without retries. The Windows test used an isolated
+  `/mnt/c/FVS/fvs-tests-runs` root.
+- `fvs-modern` was cloned at commit
+  `10c2f82a9cf7d535b32eb2b78b877bc39599137f` and its SN executable was built
+  with GNU Fortran 15.2.0 using
+  `bash deployment/scripts/build_fvs_executables.sh . lib sn`. The resulting
+  external artifact is `~/projects/fvs-modern/lib/FVSsn`; it is not tracked by
+  this repository.
 - `thinba` is a smoke input only. It intentionally has no expected database, so
   the live evidence qualifies invocation and artifact capture—not numerical
   equivalence.

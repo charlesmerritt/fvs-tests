@@ -148,6 +148,9 @@ fake-engine integration tests. Real engines are opt-in and always serial:
 FVS_TEST_LIVE=1 uv run pytest tests/integration/test_live_engines.py \
   -m live_engine -k fvsjl -q
 
+FVS_TEST_LIVE=1 uv run pytest tests/integration/test_live_engines.py \
+  -m live_engine -k fvs_modern -q
+
 FVS_TEST_LIVE=1 \
 FVS_TEST_WINDOWS_RUNS_ROOT=/mnt/c/FVS/fvs-tests-runs \
 uv run pytest tests/integration/test_live_engines.py \

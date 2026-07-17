@@ -897,9 +897,10 @@ Update the plan checkboxes, notes, and final response with exact deterministic
 test counts, live-engine outcomes, commit hashes, and remaining gaps. Do not claim
 a live adapter works unless its smoke command ran successfully in this session.
 
-Milestone evidence: `make check` passed with 31 deterministic tests and 3 live
+Milestone evidence: `make check` passed with 31 deterministic tests and 4 live
 tests skipped by default. Separate opt-in smoke tests passed for FVSjl, official
-native SN, and Windows rFVS. `fvs-modern-sn` remained unavailable at its default
+native SN, fvs-modern SN, and Windows rFVS. The fvs-modern executable was built
+from upstream commit `10c2f82a9cf7d535b32eb2b78b877bc39599137f` at its default
 configured path. The built wheel contains the Windows rFVS worker script.
 
 ## Plan completion criteria

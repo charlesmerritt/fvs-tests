@@ -55,6 +55,15 @@ def test_official_native_cli_runs_thinba(tmp_path: Path) -> None:
 
 
 @pytest.mark.live_engine
+@pytest.mark.skipif(not LIVE_ENABLED, reason="set FVS_TEST_LIVE=1 to run engines")
+def test_fvs_modern_native_cli_runs_thinba(tmp_path: Path) -> None:
+    workspace = _run("fvs-modern-sn", tmp_path / "runs")
+
+    assert (workspace / "thinba.out").is_file()
+    assert (workspace / "run.json").is_file()
+
+
+@pytest.mark.live_engine
 @pytest.mark.skipif(
     not LIVE_ENABLED or WINDOWS_RUNS_ROOT is None,
     reason="set FVS_TEST_LIVE=1 and FVS_TEST_WINDOWS_RUNS_ROOT to run Windows rFVS",
